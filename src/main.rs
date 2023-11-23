@@ -6,7 +6,6 @@ use juniper::{
 };
 use warp::Filter;
 
-
 type Schema = RootNode<'static, Query, EmptyMutation<Database>, EmptySubscription<Database>>;
 
 fn schema() -> Schema {
