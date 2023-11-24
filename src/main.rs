@@ -1,40 +1,42 @@
-use std::env;
+use std::sync::Arc;
+use std::{env, net::SocketAddr};
 
-use juniper::{
-    tests::fixtures::starwars::schema::{Database, Query},
-    EmptyMutation, EmptySubscription, RootNode,
-};
-use warp::Filter;
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Json, Router};
+use serde_json::json;
+use sqlx::mysql::MySqlPoolOptions;
 
-type Schema = RootNode<'static, Query, EmptyMutation<Database>, EmptySubscription<Database>>;
+mod context;
+mod user;
 
-fn schema() -> Schema {
-    Schema::new(
-        Query,
-        EmptyMutation::<Database>::new(),
-        EmptySubscription::<Database>::new(),
-    )
+use context::AppState;
+
+async fn health() -> impl IntoResponse {
+    (StatusCode::OK, Json(json!({"health": "healthy"})))
 }
 
 #[tokio::main]
 async fn main() {
-    env::set_var("RUST_LOG", "warp_server");
+    env::set_var("RUST_LOG", "daw");
     env_logger::init();
 
-    let log = warp::log("warp_server");
+    let db_url = "mysql://root:root@localhost/concentricdev";
 
-    log::info!("Listening on 127.0.0.1:8080");
+    let pool = MySqlPoolOptions::new()
+        .max_connections(5)
+        .connect(db_url)
+        .await
+        .unwrap();
 
-    let state = warp::any().map(move || Database::new());
-    let graphql_filter = juniper_warp::make_graphql_filter(schema(), state.boxed());
+    let state = Arc::new(AppState::new(pool));
 
-    warp::serve(
-        warp::get()
-            .and(warp::path("graphiql"))
-            .and(juniper_warp::graphiql_filter("/graphql", None))
-            .or(warp::path("graphql").and(graphql_filter))
-            .with(log),
-    )
-    .run(([127, 0, 0, 1], 8080))
-    .await
+    let app = Router::new()
+        .route("/health", get(health))
+        .nest("/user", user::user_layer())
+        .with_state(state);
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

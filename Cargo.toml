@@ -4,11 +4,23 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+axum = { version = "0.6", features = ["macros"] }
+headers = "0.3"
 tokio = { version = "1.0", features = ["full"] }
-warp = "0.3"
 
-juniper = { version = "0.15", features = ["expose-test-schema"] }
-juniper_graphql_ws = "0.3"
-juniper_warp = { version = "0.7", features = ["subscriptions"] }
 env_logger = "0.10"
 log = "0.4"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+jsonwebtoken = "9.0"
+
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-native-tls",
+    "mysql",
+    "macros",
+    "chrono",
+] }
+
+chrono = { version = "0.4", features = ["serde"] }
+nanoid = "0.4"

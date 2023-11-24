@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_DATABASE=concentricdev
+      - MYSQL_USER=concentricapp
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - concentric_volume:/var/lib/mysql
+
+volumes:
+  concentric_volume:
