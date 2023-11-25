@@ -6,12 +6,13 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use chrono::Utc;
 use serde_json::json;
 use tracing::info;
 
-use crate::state::AppState;
+use crate::{entity, state::AppState};
 
-use super::entity::CreateUser;
+use crate::entity::user::CreateUser;
 
 pub async fn create_new_user(
     State(state): State<Arc<AppState>>,
@@ -33,4 +34,22 @@ pub async fn create_new_user(
     }
 
     (StatusCode::CREATED).into_response()
+}
+
+pub async fn users() -> impl IntoResponse {
+    (
+        StatusCode::OK,
+        Json(vec![entity::user::User {
+            id: 1,
+            username: String::from(""),
+            email: String::from(""),
+            password: String::from(""),
+            active: true,
+            internal_flag: true,
+            create_timestamp: Utc::now(),
+            create_user: String::from(""),
+            update_timestamp: Utc::now(),
+            update_user: String::from(""),
+        }]),
+    )
 }

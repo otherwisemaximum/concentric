@@ -2,7 +2,7 @@ use chrono::Utc;
 use sqlx::{mysql::MySqlQueryResult, MySql, Pool};
 use tracing::info;
 
-use super::entity::{CreateUser, User};
+use crate::entity::user::{CreateUser, User};
 
 pub async fn create_user(
     user: CreateUser,
