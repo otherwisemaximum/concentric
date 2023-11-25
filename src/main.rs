@@ -1,23 +1,28 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
-use std::{env, net::SocketAddr};
 
-use axum::{http::StatusCode, response::IntoResponse, routing::get, Json, Router};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::get, Json, Router};
 use serde_json::json;
 use sqlx::mysql::MySqlPoolOptions;
+use tower_http::cors::{Any, CorsLayer};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod context;
+mod auth;
+mod state;
 mod user;
 
-use context::AppState;
+use state::AppState;
 
-async fn health() -> impl IntoResponse {
+async fn health(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    state.uptime();
     (StatusCode::OK, Json(json!({"health": "healthy"})))
 }
 
 #[tokio::main]
 async fn main() {
-    env::set_var("RUST_LOG", "daw");
-    env_logger::init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let db_url = "mysql://root:root@localhost/concentricdev";
 
@@ -29,9 +34,12 @@ async fn main() {
 
     let state = Arc::new(AppState::new(pool));
 
+    let _cors = CorsLayer::new().allow_methods(Any).allow_origin(Any);
+
     let app = Router::new()
         .route("/health", get(health))
-        .nest("/user", user::user_layer())
+        .nest("/api/user", user::user_routes_service())
+        .nest("/auth", auth::auth_route_service())
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));

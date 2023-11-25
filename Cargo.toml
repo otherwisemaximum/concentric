@@ -5,11 +5,13 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.6", features = ["macros"] }
-headers = "0.3"
+headers = "0.4"
 tokio = { version = "1.0", features = ["full"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["full"] }
 
-env_logger = "0.10"
-log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -24,3 +26,4 @@ sqlx = { version = "0.7", features = [
 
 chrono = { version = "0.4", features = ["serde"] }
 nanoid = "0.4"
+bcrypt = "0.15"

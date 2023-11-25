@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use sqlx::{mysql::MySql, pool::Pool};
+use tracing::info;
 
 #[derive(Debug)]
 pub struct AppState {
@@ -15,5 +16,10 @@ impl AppState {
             execution_id: nanoid::nanoid!(),
             pool,
         }
+    }
+
+    pub fn uptime(&self) {
+        let uptime = (Utc::now() - self.start_time).num_minutes();
+        info!("up since {} minute(s)", uptime);
     }
 }

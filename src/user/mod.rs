@@ -3,12 +3,14 @@ use std::sync::Arc;
 use axum::{debug_handler, http::StatusCode, response::IntoResponse, routing::get, Json, Router};
 use chrono::Utc;
 
-use crate::context::AppState;
+use crate::state::AppState;
 
+pub mod db;
 pub mod entity;
+mod handlers;
 
-pub fn user_layer() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(users))
+pub fn user_routes_service() -> Router<Arc<AppState>> {
+    Router::new().route("/", get(users).post(handlers::create_new_user))
 }
 
 #[debug_handler]
@@ -25,6 +27,7 @@ pub async fn users() -> impl IntoResponse {
             create_timestamp: Utc::now(),
             create_user: String::from(""),
             update_timestamp: Utc::now(),
+            update_user: String::from(""),
         }]),
     )
 }
