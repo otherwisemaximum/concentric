@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS user_role_xrefs (
     create_timestamp TIMESTAMP,
     create_user VARCHAR(15),
     update_timestamp TIMESTAMP,
-    update_user VARCHAR(15)
+    update_user VARCHAR(15),
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS permissions (
@@ -50,5 +52,7 @@ CREATE TABLE IF NOT EXISTS role_permission_xrefs (
     create_timestamp TIMESTAMP,
     create_user VARCHAR(15),
     update_timestamp TIMESTAMP,
-    update_user VARCHAR(15)
+    update_user VARCHAR(15),
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (permssion_id) REFERENCES permissions(id)
 )

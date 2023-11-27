@@ -1,7 +1,9 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use axum::extract::State;
+use axum::extract::{State, TypedHeader};
+use axum::headers::authorization::Bearer;
+use axum::headers::Authorization;
 use axum::http::{Request, StatusCode};
 use axum::middleware::Next;
 use axum::response::Response;
@@ -27,6 +29,16 @@ async fn server_name_header<B>(request: Request<B>, next: Next<B>) -> Response {
     response
 }
 
+async fn _auth<B>(
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+    request: Request<B>,
+    next: Next<B>,
+) -> Response {
+    dbg!(auth);
+    let response = next.run(request).await;
+    response
+}
+
 pub fn build_routes(state: Arc<AppState>) -> Router {
     let middleware = tower::ServiceBuilder::new()
         .layer(CompressionLayer::new().quality(Fastest))
@@ -37,6 +49,12 @@ pub fn build_routes(state: Arc<AppState>) -> Router {
         .layer(CatchPanicLayer::new());
 
     Router::new()
+        .route(
+            "/api/users",
+            get(crate::user::handlers::users).post(crate::user::handlers::create_new_user),
+        )
+        // no auth needed beyond this point
+        .route("/auth/login", post(crate::auth::handler::authenticate))
         .route(
             "/health",
             get(|State(state): State<Arc<AppState>>| async move {
@@ -50,11 +68,6 @@ pub fn build_routes(state: Arc<AppState>) -> Router {
                     })),
                 )
             }),
-        )
-        .route("/login", post(crate::auth::handler::authenticate))
-        .route(
-            "/",
-            get(crate::user::handlers::users).post(crate::user::handlers::create_new_user),
         )
         .layer(middleware)
         .with_state(state)

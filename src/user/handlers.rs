@@ -20,7 +20,8 @@ pub async fn create_new_user(
 ) -> Response {
     info!("create user request: {:?}", create_user);
     let result =
-        super::db::create_user(create_user, &state.pool, true, true, String::from("DAW")).await;
+        super::queries::create_user(create_user, &state.pool, true, true, String::from("DAW"))
+            .await;
 
     if result.is_err() {
         return (

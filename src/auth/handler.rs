@@ -6,7 +6,7 @@ use serde_json::json;
 use tracing::info;
 
 use crate::entity::auth::{AuthorizeUser, Claims};
-use crate::{state::AppState, user::db::get_user_by_email};
+use crate::{state::AppState, user::queries::get_user_by_email};
 
 pub async fn authenticate(
     State(state): State<Arc<AppState>>,

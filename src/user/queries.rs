@@ -11,6 +11,7 @@ pub async fn create_user(
     active: bool,
     audit_user: String,
 ) -> Result<MySqlQueryResult, sqlx::Error> {
+    // TODO: allow user to be created based on current user roles
     info!("creating user for username: {}", user.username);
     sqlx::query(
         "INSERT INTO users (username, email, password, internal_flag, active, 
